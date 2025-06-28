@@ -11,7 +11,8 @@
 #   $ ./scripts/build --android 34 --jdk 23.0.2_7
 #
 
-ARG jdk=23.0.2_7
+#ARG jdk =23.0.2_7
+ARG jdk=17.0.14_7
 
 FROM eclipse-temurin:${jdk}-jdk
 ARG android=35
@@ -28,15 +29,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         git-lfs \
         gnupg \
         openssl \
+        sudo \
+	patch \
+	lsb-release \
+	python-is-python3 \
+	less \
+	bzip2 \
         unzip
 RUN curl -s https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o /tmp/tools.zip && \
     unzip -q /tmp/tools.zip -d /tmp && \
     yes | /tmp/cmdline-tools/bin/sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" --licenses && \
     /tmp/cmdline-tools/bin/sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" --install "cmdline-tools;latest" && \
     rm -r /tmp/tools.zip /tmp/cmdline-tools
-RUN adduser nonroot && chown nonroot:nonroot -R "${ANDROID_SDK_ROOT}"
-USER nonroot
-RUN mkdir -p /home/nonroot/.android/ && touch /home/nonroot/.android/repositories.cfg
+#RUN adduser nonroot && chown nonroot:nonroot -R "${ANDROID_SDK_ROOT}"
+#USER nonroot
+RUN chown ubuntu:ubuntu -R "${ANDROID_SDK_ROOT}"
+RUN echo "ubuntu:ubuntu" | chpasswd
+USER ubuntu
+RUN mkdir -p /home/ubuntu/.android/ && touch /home/ubuntu/.android/repositories.cfg
 RUN yes | sdkmanager --licenses >/dev/null && sdkmanager --install \
         "platforms;android-${android}" \
         "platform-tools"
